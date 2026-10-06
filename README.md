@@ -20,3 +20,6 @@ Trabajo práctico: aplicación web con **Blazor Server (.NET 8)** y **Entity Fra
 
 ## Autor
 Mangas Julian
+
+## Demo
+tp2-webmangasjulian.runasp.net
