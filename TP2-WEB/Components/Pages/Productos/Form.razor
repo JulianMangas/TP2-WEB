@@ -1,0 +1,78 @@
+﻿@page "/productos/nuevo"
+@page "/productos/editar/{Id:int}"
+@using TP2_WEB.Data
+@using TP2_WEB.Models
+@inject CrudService<Producto> Service
+@inject CrudService<Categoria> CategoriaService
+@inject CrudService<Proveedor> ProveedorService
+@inject NavigationManager Nav
+
+<h1>@(Id is null ? "Nuevo producto" : "Editar producto")</h1>
+
+@if (model is not null)
+{
+    <EditForm Model="model" OnValidSubmit="Guardar" FormName="formProducto">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <InputText class="form-control" @bind-Value="model.Nombre" />
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Precio</label>
+                <InputNumber class="form-control" @bind-Value="model.Precio" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Stock</label>
+                <InputNumber class="form-control" @bind-Value="model.Stock" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            <InputSelect class="form-select" @bind-Value="model.CategoriaId">
+                <option value="0">-- Seleccione --</option>
+                @foreach (var c in categorias)
+                {
+                    <option value="@c.Id">@c.Nombre</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Proveedor</label>
+            <InputSelect class="form-select" @bind-Value="model.ProveedorId">
+                <option value="0">-- Seleccione --</option>
+                @foreach (var v in proveedores)
+                {
+                    <option value="@v.Id">@v.RazonSocial</option>
+                }
+            </InputSelect>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a class="btn btn-secondary" href="productos">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private Producto? model;
+    private List<Categoria> categorias = new();
+    private List<Proveedor> proveedores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        categorias = await CategoriaService.GetAllAsync();
+        proveedores = await ProveedorService.GetAllAsync();
+        model = Id is null ? new Producto() : await Service.GetByIdAsync(Id.Value);
+        if (model is null) Nav.NavigateTo("productos");
+    }
+
+    private async Task Guardar()
+    {
+        if (Id is null) await Service.CreateAsync(model!);
+        else await Service.UpdateAsync(model!);
+        Nav.NavigateTo("productos");
+    }
+}

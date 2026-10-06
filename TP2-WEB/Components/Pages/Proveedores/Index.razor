@@ -1,0 +1,66 @@
+﻿@page "/proveedores"
+@using TP2_WEB.Data
+@using TP2_WEB.Models
+@inject CrudService<Proveedor> Service
+
+<PageTitle>Proveedores</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Proveedores</h1>
+    <a class="btn btn-primary" href="proveedores/nuevo">Nuevo proveedor</a>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@if (items is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr><th>Id</th><th>Razón social</th><th>CUIT</th><th>Email</th><th>Teléfono</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var p in items)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.RazonSocial</td>
+                <td>@p.Cuit</td>
+                <td>@p.Email</td>
+                <td>@p.Telefono</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-warning" href="proveedores/editar/@p.Id">Editar</a>
+                    <button class="btn btn-sm btn-danger" @onclick="() => Eliminar(p.Id)">Eliminar</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Proveedor>? items;
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => items = await Service.GetAllAsync();
+
+    private async Task Eliminar(int id)
+    {
+        try
+        {
+            error = null;
+            await Service.DeleteAsync(id);
+            items = await Service.GetAllAsync();
+        }
+        catch (Exception)
+        {
+            error = "No se puede eliminar: tiene productos asociados.";
+        }
+    }
+}

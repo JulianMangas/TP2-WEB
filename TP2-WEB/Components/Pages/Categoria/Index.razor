@@ -1,0 +1,64 @@
+﻿@page "/categorias"
+@using TP2_WEB.Data
+@using TP2_WEB.Models
+@inject CrudService<Categoria> Service
+
+<PageTitle>Categorías</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Categorías</h1>
+    <a class="btn btn-primary" href="categorias/nuevo">Nueva categoría</a>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@if (items is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr><th>Id</th><th>Nombre</th><th>Descripción</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var c in items)
+            {
+                <tr>
+                    <td>@c.Id</td>
+                    <td>@c.Nombre</td>
+                    <td>@c.Descripcion</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-warning" href="categorias/editar/@c.Id">Editar</a>
+                        <button class="btn btn-sm btn-danger" @onclick="() => Eliminar(c.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Categoria>? items;
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => items = await Service.GetAllAsync();
+
+    private async Task Eliminar(int id)
+    {
+        try
+        {
+            error = null;
+            await Service.DeleteAsync(id);
+            items = await Service.GetAllAsync();
+        }
+        catch (Exception)
+        {
+            error = "No se puede eliminar: tiene productos asociados.";
+        }
+    }
+}

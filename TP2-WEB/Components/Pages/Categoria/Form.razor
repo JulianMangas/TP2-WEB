@@ -1,0 +1,46 @@
+﻿@page "/categorias/nuevo"
+@page "/categorias/editar/{Id:int}"
+@using TP2_WEB.Data
+@using TP2_WEB.Models
+@inject CrudService<Categoria> Service
+@inject NavigationManager Nav
+
+<h1>@(Id is null ? "Nueva categoría" : "Editar categoría")</h1>
+
+@if (model is not null)
+{
+    <EditForm Model="model" OnValidSubmit="Guardar" FormName="formCategoria">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <InputText class="form-control" @bind-Value="model.Nombre" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <InputText class="form-control" @bind-Value="model.Descripcion" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a class="btn btn-secondary" href="categorias">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private Categoria? model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = Id is null ? new Categoria() : await Service.GetByIdAsync(Id.Value);
+        if (model is null) Nav.NavigateTo("categorias");
+    }
+
+    private async Task Guardar()
+    {
+        if (Id is null) await Service.CreateAsync(model!);
+        else await Service.UpdateAsync(model!);
+        Nav.NavigateTo("categorias");
+    }
+}

@@ -1,0 +1,56 @@
+﻿@page "/productos"
+@using TP2_WEB.Data
+@using TP2_WEB.Models
+@inject CrudService<Producto> Service
+
+<PageTitle>Productos</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Productos</h1>
+    <a class="btn btn-primary" href="productos/nuevo">Nuevo producto</a>
+</div>
+
+@if (items is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr><th>Id</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Proveedor</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var p in items)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.Nombre</td>
+                <td>@p.Precio.ToString("C")</td>
+                <td>@p.Stock</td>
+                <td>@p.Categoria?.Nombre</td>
+                <td>@p.Proveedor?.RazonSocial</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-warning" href="productos/editar/@p.Id">Editar</a>
+                    <button class="btn btn-sm btn-danger" @onclick="() => Eliminar(p.Id)">Eliminar</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Producto>? items;
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar() =>
+        items = await Service.GetAllAsync(p => p.Categoria, p => p.Proveedor);
+
+    private async Task Eliminar(int id)
+    {
+        await Service.DeleteAsync(id);
+        await Cargar();
+    }
+}

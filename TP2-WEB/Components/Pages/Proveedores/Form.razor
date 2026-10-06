@@ -1,0 +1,54 @@
+﻿@page "/proveedores/nuevo"
+@page "/proveedores/editar/{Id:int}"
+@using TP2_WEB.Data
+@using TP2_WEB.Models
+@inject CrudService<Proveedor> Service
+@inject NavigationManager Nav
+
+<h1>@(Id is null ? "Nuevo proveedor" : "Editar proveedor")</h1>
+
+@if (model is not null)
+{
+    <EditForm Model="model" OnValidSubmit="Guardar" FormName="formProveedor">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="mb-3">
+            <label class="form-label">Razón social</label>
+            <InputText class="form-control" @bind-Value="model.RazonSocial" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">CUIT</label>
+            <InputText class="form-control" @bind-Value="model.Cuit" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="model.Email" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <InputText class="form-control" @bind-Value="model.Telefono" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a class="btn btn-secondary" href="proveedores">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private Proveedor? model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = Id is null ? new Proveedor() : await Service.GetByIdAsync(Id.Value);
+        if (model is null) Nav.NavigateTo("proveedores");
+    }
+
+    private async Task Guardar()
+    {
+        if (Id is null) await Service.CreateAsync(model!);
+        else await Service.UpdateAsync(model!);
+        Nav.NavigateTo("proveedores");
+    }
+}
